@@ -42,11 +42,16 @@ connection, client_address = sock.accept()
 
 try:
 	print >>sys.stderr, 'connection from', client_address
+    memReal = [] #AQUI SE ALMACENAN LOS PROCESOS QUE ESTAN EN MEMORIA REAL
+    colaListos = [] #AQUIE SE ALMACENAN LOS PROCESOS QUE ESTAN EN LA COLA DE LISTOS
+    procesosCreados = [] #AQUI SE ALMACENAN LOS PROCESOS QUE YA SE CREARON PARA PODER BUSCARLOS EN BASE A SUS PID
+    cont = 0 #CONTADOR PARA SABER EL NUMERO DEL ULTIMO PROCESO QUE HAY EN EL SIMULADOR
+    cpu = -1 #ESTA VARIABLE ALMACENA EL VALOR DEL PID DEL PROCESO QUE ESTA EN LA CPU
+    realAddress = 0#DIRECCION DE MEMORIA EN LA CUAL ESTA ALMACENADO UN PROCESO
 	while True:
 		data = connection.recv(256)
 		print >>sys.stderr, 'server received "%s"' % data
         command = data.split() #SE DECLARA UNA VARIABLE QUE DIVIDE EL COMANDO
-
         #AQUI SE EVALUAN LOS COMANDOS AL EJECUTARSE
         if ( command[0] == 'QuantumV'):
             quantumV = command[1]
@@ -56,6 +61,14 @@ try:
             swapMemory = command[1];
         elif ( command [0] == 'PageSize'):
             pageSize = pageSize
+        else:
+            if(command[0] == "Create"):
+                proceso = Proceso(cont,command[1]/pageSize);
+                procesosCreados.append(proceso)
+                if(memReal == []):
+                    memReal.append(proceso)
+                else:
+                    colaListos.append(proceso)
 		if data:
 			print >>sys.stderr, 'sending answer back to the client'
 
