@@ -5,6 +5,17 @@
 import socket
 import sys
 import time
+# CREATE OBJECT PROCESO
+class Proceso:
+    pid = 0
+    marcoPagina = 0
+    paginaProceso = 0
+    pageSize = 0
+    counter = 0
+
+    def _init_(self,pid,pageSize):
+        self.pageSize = pageSize
+        self.pid = pid
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
