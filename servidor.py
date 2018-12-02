@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #This sample program, based on the one in the standard library documentation, receives incoming messages and echos them back to the sender. It starts by creating a TCP/IP socket.
-
+from tabulate import tabulate
 import socket
 import sys
 import time
+import re
 # CREATE OBJECT PROCESO
 class Proceso:
     pid = 0
@@ -33,7 +34,6 @@ sock.bind(server_address)
 # Listen for incoming connections
 sock.listen(1)
 
-
 # Wait for a connection
 print >>sys.stderr, 'waiting for a connection'
 connection, client_address = sock.accept()
@@ -42,37 +42,83 @@ connection, client_address = sock.accept()
 
 try:
 	print >>sys.stderr, 'connection from', client_address
-    memReal = [] #AQUI SE ALMACENAN LOS PROCESOS QUE ESTAN EN MEMORIA REAL
-    colaListos = [] #AQUIE SE ALMACENAN LOS PROCESOS QUE ESTAN EN LA COLA DE LISTOS
-    procesosCreados = [] #AQUI SE ALMACENAN LOS PROCESOS QUE YA SE CREARON PARA PODER BUSCARLOS EN BASE A SUS PID
-    cont = 0 #CONTADOR PARA SABER EL NUMERO DEL ULTIMO PROCESO QUE HAY EN EL SIMULADOR
-    cpu = -1 #ESTA VARIABLE ALMACENA EL VALOR DEL PID DEL PROCESO QUE ESTA EN LA CPU
-    realAddress = 0#DIRECCION DE MEMORIA EN LA CUAL ESTA ALMACENADO UN PROCESO
+	memReal = [] #AQUI SE ALMACENAN LOS PROCESOS QUE ESTAN EN MEMORIA REAL
+	colaListos = [] #AQUIE SE ALMACENAN LOS PROCESOS QUE ESTAN EN LA COLA DE LISTOS
+	procesosCreados = [] #AQUI SE ALMACENAN LOS PROCESOS QUE YA SE CREARON PARA PODER BUSCARLOS EN BASE A SUS PID
+	cont = 0 #CONTADOR PARA SABER EL NUMERO DEL ULTIMO PROCESO QUE HAY EN EL SIMULADOR
+	cpu = -1 #ESTA VARIABLE ALMACENA EL VALOR DEL PID DEL PROCESO QUE ESTA EN LA CPU
+	realAddress = 0#DIRECCION DE MEMORIA EN LA CUAL ESTA ALMACENADO UN PROCESO
+	
+	data = connection.recv(256)
+	politicaS = data.split(' ', 3)[2]
+	politicaM = data.split(' ', 4)[4]
+	answer = 'Recibido Politica de scheduling ' + politicaS + ' Politica de memoria ' + politicaM
+	connection.sendall( answer) 
+	print >>sys.stderr, data
+	print >>sys.stderr, answer
+	
+	#if politicaS != "RR":
+		#sys.exit("Error")
+		
+	#if politicaM != "MFU":
+		#sys.exit("Error")
+		
+	data = connection.recv(256)
+	quantumV = float(re.search(r'\d+', data).group()) 
+	answer = 'Recibido Quantum de ' + str(quantumV)
+	connection.sendall(answer) 
+	print >>sys.stderr, data
+	print >>sys.stderr, answer
+	
+	data = connection.recv(256) 
+	realMemory = int(re.search(r'\d+', data).group()) 
+	answer = 'Recibido Memoria real ' + str(realMemory)
+	connection.sendall(answer) 
+	print >>sys.stderr, data
+	print >>sys.stderr, answer
+	
+	data = connection.recv(256)
+	swapMemory = int(re.search(r'\d+', data).group()) 
+	answer = 'Recibido Swap Memory ' + str(swapMemory)
+	connection.sendall(answer) 
+	print >>sys.stderr, data
+	print >>sys.stderr, answer
+	
+	data = connection.recv(256)
+	pageSize = int(re.search(r'\d+', data).group()) 
+	answer = 'Recibido Page size ' + str(pageSize)
+	connection.sendall(answer) 
+	print >>sys.stderr, data
+	print >>sys.stderr, answer
+	
+	header = ["Comando", "Timestamp", "Dir. Real", "Cola de listos", "CPU", "Memoria real", "Area de swapping", "Proceos terminados"]
+	
+	
 	while True:
 		data = connection.recv(256)
 		print >>sys.stderr, 'server received "%s"' % data
-        command = data.split() #SE DECLARA UNA VARIABLE QUE DIVIDE EL COMANDO
-        #AQUI SE EVALUAN LOS COMANDOS AL EJECUTARSE
-        if ( command[0] == 'QuantumV'):
-            quantumV = command[1]
-        elif ( command[0] == 'RealMemory'):
-            realMemory = command[1]
-        elif ( command[0]) == 'SwapMemory' ):
-            swapMemory = command[1];
-        elif ( command [0] == 'PageSize'):
-            pageSize = pageSize
-        else:
-            if(command[0] == "Create"):
-                proceso = Proceso(cont,command[1]/pageSize);
-                procesosCreados.append(proceso)
-                if(memReal == []):
-                    memReal.append(proceso)
-                else:
-                    colaListos.append(proceso)
+		command = data.split() #SE DECLARA UNA VARIABLE QUE DIVIDE EL COMANDO
+		#AQUI SE EVALUAN LOS COMANDOS AL EJECUTARSE
+		if ( command[0] == 'QuantumV'):
+			quantumV = command[1]
+		elif ( command[0] == 'RealMemory'):
+			realMemory = command[1]
+		elif ( command[0] == 'SwapMemory' ):
+			swapMemory = command[1];
+		elif ( command [0] == 'PageSize'):
+			pageSize = pageSize
+		else:
+			if(command[0] == "Create"):
+				proceso = Proceso(cont,command[1]/pageSize);
+				procesosCreados.append(proceso)
+				if(memReal == []):
+					memReal.append(proceso)
+				else:
+					colaListos.append(proceso)
+		
 		if data:
-			print >>sys.stderr, 'sending answer back to the client'
-
-			connection.sendall('process created')
+			print >>sys.stderr, 'table'  # informacion de la tabla
+			connection.sendall('answer') # respuesta del cliente al servidor
 		else:
 			print >>sys.stderr, 'no data from', client_address
 			connection.close()
