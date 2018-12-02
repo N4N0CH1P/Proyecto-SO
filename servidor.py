@@ -17,6 +17,7 @@ class Proceso:
         self.pageSize = pageSize
         self.pid = pid
 
+
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -41,11 +42,20 @@ connection, client_address = sock.accept()
 
 try:
 	print >>sys.stderr, 'connection from', client_address
-
-    # Receive the data
 	while True:
 		data = connection.recv(256)
 		print >>sys.stderr, 'server received "%s"' % data
+        command = data.split() #SE DECLARA UNA VARIABLE QUE DIVIDE EL COMANDO
+
+        #AQUI SE EVALUAN LOS COMANDOS AL EJECUTARSE
+        if ( command[0] == 'QuantumV'):
+            quantumV = command[1]
+        elif ( command[0] == 'RealMemory'):
+            realMemory = command[1]
+        elif ( command[0]) == 'SwapMemory' ):
+            swapMemory = command[1];
+        elif ( command [0] == 'PageSize'):
+            pageSize = pageSize
 		if data:
 			print >>sys.stderr, 'sending answer back to the client'
 
